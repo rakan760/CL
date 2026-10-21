@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حاسبة الميزانية الشهرية</title>
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #0d47a1;
+      --success: #34a853;
+      --warning: #fbbc04;
+      --danger: #ea4335;
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #202124;
+      --muted: #5f6368;
+      --border: #dadce0;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px 16px;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 18px 0;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 22px 18px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      transition: background 0.3s ease;
+    }
+
+    .hero.deficit {
+      background: linear-gradient(135deg, var(--danger), #b71c1c);
+    }
+
+    .hero-label {
+      font-size: 0.95rem;
+      opacity: 0.92;
+    }
+
+    .hero-amount {
+      font-size: 2.4rem;
+      font-weight: 800;
+      margin: 8px 0;
+      direction: rtl;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.22);
+      font-size: 0.92rem;
+    }
+
+    .stats-row div strong {
+      display: block;
+      font-size: 1.15rem;
+      margin-top: 4px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #fafafa;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: #e4e7eb;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 14px 0 6px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--success);
+      width: 0%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .progress-note {
+      color: var(--muted);
+      display: block;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    .expense-list {
+      margin-top: 12px;
+    }
+
+    .expense-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f3f4;
+    }
+
+    .expense-item:last-child {
+      border-bottom: none;
+    }
+
+    .expense-name {
+      flex: 1.4;
+    }
+
+    .expense-val {
+      flex: 1;
+    }
+
+    .btn-delete {
+      background: #fee8e6;
+      color: var(--danger);
+      border: none;
+      border-radius: 10px;
+      width: 40px;
+      height: 44px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .btn-delete:hover {
+      background: #fad2cf;
+    }
+
+    .add-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 2px dashed var(--border);
+    }
+
+    .btn {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.99);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .actions-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-outline {
+      background: #ffffff;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      width: 100%;
+    }
+
+    .btn-outline:hover {
+      background: #f8f9fa;
+    }
+
+    .btn-share {
+      background: var(--success);
+      color: #ffffff;
+      width: 100%;
+    }
+
+    @media (max-width: 480px) {
+      .add-row {
+        flex-wrap: wrap;
+      }
+      .add-row input {
+        flex: 1 1 45%;
+      }
+      .add-row .btn-primary {
+        width: 100%;
+      }
+      .actions-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <h1>📊 حاسبة الميزانية الشهرية</h1>
+
+      <div class="hero" id="heroBox">
+        <div class="hero-label">الفائض المتبقي (للادخار والأهداف)</div>
+        <div class="hero-amount" id="surplusText">0 ر.س</div>
+        <div class="stats-row">
+          <div>إجمالي المصاريف <strong id="totalExpensesText">0 ر.س</strong></div>
+          <div>نسبة الادخار <strong id="savingRatioText">0%</strong></div>
+        </div>
+      </div>
+
+      <div>
+        <label for="incomeInput">💰 الدخل الشهري (الراتب):</label>
+        <input type="number" id="incomeInput" placeholder="أدخل الراتب الشهري هنا...">
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <small class="progress-note" id="progressNote">نسبة الصرف من الراتب: 0%</small>
+    </div>
+
+    <div class="card">
+      <label>🧾 قائمة المصاريف (أدخل المبالغ أو أضف بنوداً جديدة):</label>
+      <div class="expense-list" id="expenseList"></div>
+
+      <div class="add-row">
+        <input type="text" id="newName" placeholder="اسم المصروف (مثال: نادي، قسط)">
+        <input type="number" id="newAmount" placeholder="المبلغ">
+        <button class="btn btn-primary" id="addBtn">+ إضافة</button>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn btn-outline" id="clearBtn">🔄 تصفير جميع الخانات</button>
+        <button class="btn btn-share" id="shareBtn">📋 نسخ الملخص للواتساب</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const defaultExpenses = [
+      { name: "مصاريف البيت والمقاضي", amount: 0 },
+      { name: "المصروف الشخصي والطلعات", amount: 0 },
+      { name: "فواتير واتصالات", amount: 0 },
+      { name: "بنزين ومواصلات", amount: 0 },
+      { name: "التزامات وأقساط", amount: 0 }
+    ];
+
+    let expenses = JSON.parse(JSON.stringify(defaultExpenses));
+
+    const incomeInput = document.getElementById('incomeInput');
+    const expenseList = document.getElementById('expenseList');
+    const surplusText = document.getElementById('surplusText');
+    const totalExpensesText = document.getElementById('totalExpensesText');
+    const savingRatioText = document.getElementById('savingRatioText');
+    const heroBox = document.getElementById('heroBox');
+    const progressFill = document.getElementById('progressFill');
+    const progressNote = document.getElementById('progressNote');
+
+    function loadSavedData() {
+      try {
+        const savedExp = localStorage.getItem('vscode_budget_expenses');
+        const savedInc = localStorage.getItem('vscode_budget_income');
+        if (savedExp) expenses = JSON.parse(savedExp);
+        if (savedInc) incomeInput.value = savedInc;
+      } catch (err) {
+        console.warn('LocalStorage not available');
+      }
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem('vscode_budget_expenses', JSON.stringify(expenses));
+        localStorage.setItem('vscode_budget_income', incomeInput.value);
+      } catch (err) {}
+    }
+
+    function renderList() {
+      expenseList.innerHTML = '';
+      expenses.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'expense-item';
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'expense-name';
+        nameInput.value = item.name;
+        nameInput.placeholder = 'اسم البند';
+        nameInput.addEventListener('input', (e) => {
+          expenses[index].name = e.target.value;
+          saveData();
+        });
+
+        const valInput = document.createElement('input');
+        valInput.type = 'number';
+        valInput.className = 'expense-val';
+        valInput.value = item.amount === 0 ? '' : item.amount;
+        valInput.placeholder = '0';
+        valInput.addEventListener('input', (e) => {
+          expenses[index].amount = parseFloat(e.target.value) || 0;
+          updateSummary();
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn-delete';
+        delBtn.textContent = '×';
+        delBtn.title = 'حذف البند';
+        delBtn.addEventListener('click', () => {
+          expenses.splice(index, 1);
+          renderList();
+        });
+
+        row.appendChild(nameInput);
+        row.appendChild(valInput);
+        row.appendChild(delBtn);
+        expenseList.appendChild(row);
+      });
+
+      updateSummary();
+    }
+
+    function updateSummary() {
+      saveData();
+      const income = parseFloat(incomeInput.value) || 0;
+      const total = expenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+      const surplus = income - total;
+      const ratio = income > 0 ? Math.round((surplus / income) * 100) : 0;
+      const spentRatio = income > 0 ? Math.min(100, Math.round((total / income) * 100)) : 0;
+
+      surplusText.textContent = surplus.toLocaleString() + ' ر.س';
+      totalExpensesText.textContent = total.toLocaleString() + ' ر.س';
+      savingRatioText.textContent = (ratio > 0 ? ratio : 0) + '%';
+
+      if (surplus < 0) {
+        heroBox.classList.add('deficit');
+      } else {
+        heroBox.classList.remove('deficit');
+      }
+
+      progressFill.style.width = spentRatio + '%';
+      progressFill.style.backgroundColor =
+        spentRatio > 85 ? '#ea4335' : spentRatio > 65 ? '#fbbc04' : '#34a853';
+      progressNote.textContent = `نسبة الصرف من الراتب: ${spentRatio}%`;
+    }
+
+    document.getElementById('addBtn').addEventListener('click', () => {
+      const nameEl = document.getElementById('newName');
+      const amountEl = document.getElementById('newAmount');
+      const name = nameEl.value.trim() || 'مصروف إضافي';
+      const amount = parseFloat(amountEl.value) || 0;
+
+      expenses.push({ name, amount });
+      nameEl.value = '';
+      amountEl.value = '';
+      renderList();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      incomeInput.value = '';
+      expenses = JSON.parse(JSON.stringify(defaultExpenses));
+      try {
+        localStorage.removeItem('vscode_budget_expenses');
+        localStorage.removeItem('vscode_budget_income');
+      } catch (e) {}
+      renderList();
+    });
+
+    document.getElementById('shareBtn').addEventListener('click', () => {
+      const income = parseFloat(incomeInput.value) || 0;
+      const total = expenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+      const surplus = income - total;
+
+      let text = `📊 *ملخص الميزانية الشهرية*\n`;
+      text += `💰 الدخل: ${income.toLocaleString()} ر.س\n`;
+      text += `------------------\n`;
+      expenses.forEach(e => {
+        if (e.amount > 0) text += `• ${e.name}: ${e.amount.toLocaleString()} ر.س\n`;
+      });
+      text += `------------------\n`;
+      text += `🧾 إجمالي المصاريف: ${total.toLocaleString()} ر.س\n`;
+      text += `✅ الفائض المتبقي: ${surplus.toLocaleString()} ر.س`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert('تم نسخ الملخص! يمكنك لصقه في واتساب الآن.');
+      });
+    });
+
+    incomeInput.addEventListener('input', updateSummary);
+
+    loadSavedData();
+    renderList();
+  </script>
+</body>
+</html>
